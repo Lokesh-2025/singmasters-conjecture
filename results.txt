@@ -149,14 +149,69 @@ Oracle design (all Phase 1-4 techniques):
   - No phantom states — mathematically exact
 
 ================================================================
+EXPERIMENT 6 — Value 3003, Phase 4 v2 — Lossy Oracle, 2 Iterations
+================================================================
+Date: 2026-07-08
+Search space: 128 rows (7 qubits)
+Marked: row 14, row 15, row 78 (lossy oracle also marks 9 phantom rows)
+Backend: ibm_marrakesh (156-qubit heavy-hex)
+Job ID: d9713kotcv6s73dkbe0g
+Shots: 4096
+Grover iterations: 2 (optimal for M=12 lossy oracle)
+
+Optimization applied (Idea 4 — Search-space folding):
+  Skip q4, q5 checks in oracle (all 3003 rows have q4=q5=0 classically)
+  Oracle: 2 RCCX instead of 4 RCCX + CCX → 19 CX/iter (was 37)
+  Lossy oracle marks M=12 rows. For M=12, N=128: 2 iterations ≈ 100% in simulation.
+
+Circuit stats:
+  Logical basis gates: 263
+  Hardware gates (best seed): 1,037  (4× routing overhead — PROBLEM)
+  CZ gates: 217
+
+Simulator prediction (noiseless, 2 iter): 10.57× amplification
+Hardware result:
+  Row  14 (0001110):  76 shots (1.9%) ← 3003!
+  Row  78 (1001110):  61 shots (1.5%) ← 3003!
+  Row  15 (0001111):  49 shots (1.2%) ← 3003!
+  (random baseline: 0.78% per row)
+
+  Amplification: 1.92×
+  ❌ FAILED to beat v1 — routing overhead killed the signal
+
+Root cause identified:
+  A1 qubit needs 4 direct connections (A0, Q3, Q6, Q0) in the circuit.
+  Heavy-hex physical qubits allow max 3 connections.
+  Transpiler forced to inject ~300 SWAP gates → 263 logical → 1,037 hardware.
+  Hardware noise floor: ~600 gates. At 1,037 gates, signal collapses.
+
+Key discovery:
+  This is not a Grover problem. It is a GRAPH EMBEDDING problem.
+  The circuit's dependency hypergraph has a degree-4 node.
+  Heavy-hex cannot represent a 4-body interaction natively.
+  Standard transpilation breaks down. Algorithm redesign required.
+
+================================================================
+EXPERIMENT 7 — Phase 5: Lattice-Native Amplitude Amplification (LNAA)
+================================================================
+[IN PROGRESS — see experiments/phase5_lnaa.py]
+
+Completely new approach born from Phase 4's hardware wall.
+Replace Grover's oracle+diffusion with quantum walk on heavy-hex graph.
+No ancilla. No SWAP gates. RZZ + RZ gates only (both IBM-native).
+Derive Ising Hamiltonian H = Σ J_ij Z_i Z_j + Σ h_i Z_i
+whose ground states are rows 14, 15, 78.
+Expected: ~30-60 hardware gates for full experiment.
+
+================================================================
 FULL EXPERIMENT TIMELINE — 3003 in Pascal's Triangle
 ================================================================
-Phase 1   (  772 gates, opt=1, ibm_kingston,   4 qubits):  3.0×  ✅
-Phase 2   (16,271 gates, opt=1, ibm_marrakesh, 4 qubits):  1.04× ❌  noise floor
-Phase 3v3 (  103 gates, opt=2, ibm_marrakesh,  4 qubits):  4.17× ✅
-Phase 4   (  624 gates, opt=3, ibm_marrakesh,  7 qubits):  3.04× ✅  (row 78 found!)
-
-99.4% gate reduction Phase 2→3. First 7-qubit run targeting row 78.
+Phase 1    (  772 gates, opt=1, ibm_kingston,   4 qubits):  3.0×  ✅
+Phase 2    (16,271 gates, opt=1, ibm_marrakesh, 4 qubits):  1.04× ❌  noise floor
+Phase 3v3  (  103 gates, opt=2, ibm_marrakesh,  4 qubits):  4.17× ✅
+Phase 4 v1 (  624 gates, opt=3, ibm_marrakesh,  7 qubits):  3.04× ✅  row 78 found!
+Phase 4 v2 (1,037 gates, opt=2, ibm_marrakesh,  7 qubits):  1.92× ❌  routing overhead
+Phase 5    (  ???  gates, LNAA, ibm_marrakesh,  7 qubits):  ???   🔬 in progress
 
 ================================================================
 OBSERVATIONS
@@ -169,3 +224,6 @@ OBSERVATIONS
 6. Hardware amplification (4.17×) close to simulator prediction (6.2×) at 103 gates
 7. Phase 4: jumping from 4→7 qubits increases transpiled gates 6× even at 1 iteration
 8. A3 ancilla (not a separate APH) works as phase kickback target: H|1>=|-> trick
+9. Hardware noise floor: ~600 gates. Above that, signal collapses regardless of algorithm
+10. Routing overhead scales with qubit degree: degree-4 hub → 4× gate inflation
+11. Graph embedding is the real constraint — not gate count, not algorithm design
