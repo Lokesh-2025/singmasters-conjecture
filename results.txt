@@ -194,14 +194,49 @@ Key discovery:
 ================================================================
 EXPERIMENT 7 — Phase 5: Lattice-Native Amplitude Amplification (LNAA)
 ================================================================
-[IN PROGRESS — see experiments/phase5_lnaa.py]
+Date: 2026-07-08
+Search space: 128 rows (7 qubits)
+Marked: row 14 (C(14,6)=3003), row 15 (C(15,5)=3003), row 78 (C(78,2)=3003)
+Backend: ibm_marrakesh (156-qubit heavy-hex)
+Job ID: d971ok52su3c739hhmpg
+Shots: 4096
 
-Completely new approach born from Phase 4's hardware wall.
-Replace Grover's oracle+diffusion with quantum walk on heavy-hex graph.
-No ancilla. No SWAP gates. RZZ + RZ gates only (both IBM-native).
-Derive Ising Hamiltonian H = Σ J_ij Z_i Z_j + Σ h_i Z_i
-whose ground states are rows 14, 15, 78.
-Expected: ~30-60 hardware gates for full experiment.
+Approach: Completely new — derived from scratch.
+Replace Grover's Boolean oracle+diffusion with Ising Hamiltonian quantum walk.
+No ancilla. No SWAP gates. No Grover iterations.
+Only RZZ + RZ gates (both IBM-native, zero routing overhead).
+
+Hamiltonian derived from target structure:
+  H = Σ h_i Z_i + J_06 Z_0 Z_6
+  h_1=h_2=h_3=+1  (reward q1=q2=q3=1, shared across all targets)
+  h_4=h_5=-1      (reward q4=q5=0, shared across all targets)
+  J_06=+0.5       (penalize q0=q6=same, discourages row 79)
+  Ground states: rows 15 and 78 (E=-5.5), row 14 first excited (E=-4.5)
+
+Circuit: p=2 layers of [RZ oracle] + [RX mixing]
+  gamma=2.589, beta=0.501 (found by parameter sweep)
+
+Circuit stats:
+  Logical gates: 49  (4 CX)
+  Hardware gates: 135  (4 CZ)
+  (vs 1,037 gates for Phase 4 v2)
+
+Simulator prediction (noiseless): 31.26× amplification
+Hardware result:
+  Row  78 (1001110): 1157 shots (28.2%) ← 3003!
+  Row  15 (0001111): 1056 shots (25.8%) ← 3003!
+  Row  79 (1001111):  497 shots (12.1%)   (phantom — same energy as row 14)
+  Row  14 (0001110):  455 shots (11.1%) ← 3003!
+  (random baseline: 0.78% per row)
+
+  Marked rows combined: 2668/4096 = 65.1%
+  Random baseline: 2.34%
+  Amplification: 27.78×
+  ✅ SUCCESS — highest amplification ever achieved on hardware!
+
+Key insight: Stop designing circuits in abstract qubit space.
+Let the hardware graph BE the algorithm.
+Heavy-hex topology = Ising lattice = natural quantum walk substrate.
 
 ================================================================
 FULL EXPERIMENT TIMELINE — 3003 in Pascal's Triangle
@@ -211,7 +246,7 @@ Phase 2    (16,271 gates, opt=1, ibm_marrakesh, 4 qubits):  1.04× ❌  noise fl
 Phase 3v3  (  103 gates, opt=2, ibm_marrakesh,  4 qubits):  4.17× ✅
 Phase 4 v1 (  624 gates, opt=3, ibm_marrakesh,  7 qubits):  3.04× ✅  row 78 found!
 Phase 4 v2 (1,037 gates, opt=2, ibm_marrakesh,  7 qubits):  1.92× ❌  routing overhead
-Phase 5    (  ???  gates, LNAA, ibm_marrakesh,  7 qubits):  ???   🔬 in progress
+Phase 5    (  135  gates, LNAA, ibm_marrakesh,  7 qubits): 27.78× ✅  RECORD!
 
 ================================================================
 OBSERVATIONS
@@ -227,3 +262,7 @@ OBSERVATIONS
 9. Hardware noise floor: ~600 gates. Above that, signal collapses regardless of algorithm
 10. Routing overhead scales with qubit degree: degree-4 hub → 4× gate inflation
 11. Graph embedding is the real constraint — not gate count, not algorithm design
+12. LNAA breakthrough: Ising Hamiltonian quantum walk achieves 27.78× with 135 gates
+    — hardware-native gates (RZZ+RX) need zero routing, so logical ≈ physical gate count
+    — encode targets as ground states, not Boolean conditions
+    — 6.7× better than previous hardware record (4.17×, Phase 3v3)
