@@ -110,13 +110,44 @@ Amplification: 4.17×
 ✅ SUCCESS — Grover's found 3003 at rows [14, 15]
 
 ================================================================
+EXPERIMENT 5 — Value 3003, Phase 4 — 7-qubit, Row 78 (SMOKE TEST)
+================================================================
+Date: 2026-07-08
+Search space: 128 rows (7 qubits)
+Marked: row 14 (C(14,6)=3003), row 15 (C(15,5)=3003), row 78 (C(78,2)=3003)
+Backend: ibm_marrakesh (156-qubit heavy-hex)
+Job ID: d970aut2su3c739hfth0
+Shots: 1024
+Grover iterations: 1 (smoke test — circuit too deep for 4 iterations)
+
+Circuit stats:
+  Total gates:  624  (vs 103 in Phase 3v3)
+  CZ gates:     115  (vs 26 in Phase 3v3)
+  Qubits:       11   (7 data + 4 ancilla)
+Runtime: DD enabled, Pauli twirling enabled
+
+Simulator prediction (1 iteration, noiseless):
+  Row 14: ~6%  |  Row 15: ~6.5%  |  Row 78: ~7.1%
+  Total: ~19.6% on marked states (8.5× amplification)
+
+Hardware result: PENDING — job d970aut2su3c739hfth0
+
+Oracle design (all Phase 1-4 techniques):
+  - Shared Boolean factoring: q3=q2=q1=1 AND q4=0 AND q5=0 (all 3 rows share this)
+  - Term A: CZ(Q6_inv, A3) → marks rows 14 and 15 with one gate
+  - Term B: CCZ(Q6, Q0_inv, A3) → marks row 78 only
+  - A3 used as phase target (H|1>=|-> trick, same as Phase 3v3 used Q3)
+  - No phantom states — mathematically exact
+
+================================================================
 FULL EXPERIMENT TIMELINE — 3003 in Pascal's Triangle
 ================================================================
-Phase 1  (  772 gates, opt=1, ibm_kingston):   3.0×  ✅
-Phase 2  (16,271 gates, opt=1, ibm_marrakesh): 1.04× ❌  noise floor
-Phase 3v3 (  103 gates, opt=2, ibm_marrakesh): 4.17× ✅
+Phase 1   (  772 gates, opt=1, ibm_kingston,   4 qubits):  3.0×  ✅
+Phase 2   (16,271 gates, opt=1, ibm_marrakesh, 4 qubits):  1.04× ❌  noise floor
+Phase 3v3 (  103 gates, opt=2, ibm_marrakesh,  4 qubits):  4.17× ✅
+Phase 4   (  624 gates, opt=3, ibm_marrakesh,  7 qubits):  PENDING ⏳
 
-99.4% gate reduction. Signal recovered and exceeded Phase 1.
+99.4% gate reduction Phase 2→3. First 7-qubit run targeting row 78.
 
 ================================================================
 OBSERVATIONS
@@ -127,4 +158,5 @@ OBSERVATIONS
 4. RCCX safe for ancilla compute/uncompute but NOT for phase kickback oracle
 5. Removing barriers between circuit sections enables compiler boundary cancellation
 6. Hardware amplification (4.17×) close to simulator prediction (6.2×) at 103 gates
-7. Next: 5-qubit search (32 rows) to find more appearances of 3003 in Pascal's Triangle
+7. Phase 4: jumping from 4→7 qubits increases transpiled gates 6× even at 1 iteration
+8. A3 ancilla (not a separate APH) works as phase kickback target: H|1>=|-> trick
