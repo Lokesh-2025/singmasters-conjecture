@@ -2,72 +2,58 @@
 
 Exploring Singmaster's Conjecture using Grover's search algorithm on real IBM quantum hardware.
 
-**Singmaster's Conjecture:** Does any number appear 9 or more times in Pascal's Triangle?
+**Singmaster's Conjecture:** No number appears more than 12 times in Pascal's Triangle. The number 3003 holds the known record with 8 appearances — more than almost any other number. This project uses quantum search to find where 3003 hides.
 
-## Approach
+## Results Summary
 
-We use Grover's search to find which rows of Pascal's Triangle contain a target value.
-Each qubit register encodes row indices. The oracle marks rows where the value appears.
+| Experiment | Gates | Amplification | Hardware | Status |
+|------------|-------|---------------|----------|--------|
+| Value 6, Phase 1 | 611 | 4.11× | ibm_kingston | ✅ |
+| Value 3003, Phase 1 | 772 | 3.0× | ibm_kingston | ✅ |
+| Value 3003, Phase 2 (coherence limit) | 16,271 | 1.04× | ibm_marrakesh | ❌ noise floor |
+| Value 3003, Phase 3 v3 | **103** | **4.17×** | ibm_marrakesh | ✅ |
 
-## Experiments
+**Key finding:** 99.4% gate reduction (16,271 → 103) recovered the signal. The transpilation overhead on IBM's heavy-hex topology — not the algorithm — was the bottleneck.
 
-### Experiment 1 — Value 6 (2 marked states, 4 qubits)
-- Search space: rows 0-15 (2^4 = 16 states)
-- Marked: row 4 (C(4,2)=6) and row 6 (C(6,1)=6)
-- Grover iterations: 2
-- Backend: ibm_kingston
-- Circuit depth after transpile: 611
+## What We Found
 
-**Results (job d90ie8g6c68s73ai4e9g):**
-```
-|0110⟩ (row  6):  275 shots ( 26.9%) ← MARKED
-|0100⟩ (row  4):  247 shots ( 24.1%) ← MARKED
-|1011⟩ (row 11):   51 shots (  5.0%)
-|1010⟩ (row 10):   50 shots (  4.9%)
-...
+Rows 14 and 15 of Pascal's Triangle both contain 3003:
+- C(14,6) = 3003
+- C(15,5) = 3003
 
-Marked rows combined: 522/1024 shots = 51.0%
-Uniform random would give: 12.4%
-Grover amplification factor: 4.11x
-✅ SUCCESS
-```
+On ibm_marrakesh (Phase 3 v3): rows 14 and 15 captured **52.1% of all shots** vs 12.5% random baseline = **4.17× quantum amplification**.
 
-### Experiment 2 — Value 3003, Phase 1 (2 marked states, 4 qubits)
-- Search space: rows 0-15 (2^4 = 16 states)
-- Marked: row 14 (C(14,6)=3003) and row 15 (C(15,5)=3003)
-- Grover iterations: 2
-- Backend: ibm_kingston
-- Circuit depth after transpile: 772
+## The Story
 
-**Results (job d90iiq86c68s73ai4jfg):**
-```
-|1111⟩ (row 15):  196 shots ( 19.1%) ← MARKED
-|1110⟩ (row 14):  185 shots ( 18.1%) ← MARKED
-|0110⟩ (row  6):   57 shots (  5.6%)
-...
+**Phase 1:** Circuit worked. 3.0× amplification at 772 gates.
 
-Marked rows combined: 381/1024 = 37.2%
-Uniform random: 12.4%
-Amplification: 3.0x
-✅ SUCCESS
-```
+**Phase 2:** Pushed the circuit deeper to search more rows. 101 logical gates became **16,271 transpiled gates** on IBM's heavy-hex topology — a 161× expansion ratio. Signal collapsed to noise (1.04×).
 
-### Experiment 3 — Value 3003, Phase 2 (3 marked states, 7 qubits)
-- Search space: rows 0-127 (2^7 = 128 states)
-- Marked: rows 14, 15, 78 (C(78,2)=3003)
-- Status: **PENDING** — to be discussed Monday
+**Phase 3:** Studied the transpiler and pass manager. Three optimizations:
+1. `generate_preset_pass_manager` at opt=2 with seed sweep: 16,271 → 438 gates
+2. Oracle simplification — rows 14 and 15 share condition q1=q2=q3=1, so one CCZ replaces two MCX calls
+3. Ancilla-based RCCX diffusion + removed oracle/diffusion barrier so compiler cancels boundary gates
 
-## Observations
-
-1. Grover's amplification degrades with circuit depth (4.11x at depth 611 → 3.0x at depth 772)
-2. Both experiments succeeded on real hardware despite significant noise
-3. Deeper circuits (7 qubits, depth ~1500) may lose signal — to be evaluated
-
-## Next Steps (Monday discussion with Jack)
-- Run Phase 2 on simulator to verify circuit correctness
-- Decide if real hardware run is worth remaining QPU minutes
-- IonQ comparison once credits approved
+Result: **103 transpiled gates, 4.17× amplification on real hardware.**
 
 ## Files
-- `singmasters_grover.py` — value 6, two-target Grover's (4 qubits)
-- `singmasters_3003.py` — value 3003, phases 1 and 2
+
+| File | Description |
+|------|-------------|
+| `singmasters_grover.py` | Value 6 search, 4-qubit Grover (Phase 1 baseline) |
+| `singmasters_3003.py` | Value 3003, Phases 1 and 2 |
+| `phase3_grover.py` | Phase 3 v1 — transpiler benchmark (16,271 → 438 gates) |
+| `phase3_grover_v2.py` | Phase 3 v2 — oracle simplification + ancilla diffusion (131 gates) |
+| `phase3_grover_v3.py` | Phase 3 v3 — RCCX + barrier removal (103 gates) ← current best |
+| `results.txt` | Full raw results from all hardware runs |
+
+## Next Experiment
+
+5-qubit Grover search (32 rows) — find additional appearances of 3003 beyond rows 14 and 15.
+
+## Collaboration
+
+Experiment conceived and run by [Lokesh Pullakandam](https://github.com/Lokesh-2025).
+Collaboration with [Jack Woehr](https://www.linkedin.com/in/jackwoehr/) — IBM Quantum veteran, Qiskit contributor.
+
+Built on top of [quantum-hardware-mcp](https://github.com/Lokesh-2025/quantum-hardware-mcp) — an open-source MCP server giving AI assistants live access to 19 real quantum backends.

@@ -60,16 +60,71 @@ Amplification: 3.0x
 ✅ SUCCESS — Grover's found 3003 at rows [14, 15]!
 
 ================================================================
-EXPERIMENT 3 — Value 3003, Phase 2 (7 qubits, row 78)
+EXPERIMENT 3 — Value 3003, Phase 2 — Coherence Limit Test
 ================================================================
-Status: PENDING — to be discussed Monday with Jack
-Would search rows 0-127 for C(78,2)=3003
-Concern: depth ~1500, may be too noisy, may exhaust IBM free minutes
+Search space: 16 rows (4 qubits)
+Marked: row 14 (C(14,6)=3003) and row 15 (C(15,5)=3003)
+Backend: ibm_marrakesh (156-qubit heavy-hex)
+Circuit depth after transpile: 16,271 (161× expansion from 101 logical gates)
+Shots: 2048
+
+Top results:
+  All 16 states roughly uniform — noise floor
+
+Amplification: 1.04×
+❌ FAILED — noise floor. Circuit too deep for hardware coherence window.
+
+Key finding: 101 logical gates → 16,271 transpiled gates on heavy-hex topology.
+161× expansion ratio. The transpilation overhead is the bottleneck, not the algorithm.
+
+================================================================
+EXPERIMENT 4 — Value 3003, Phase 3 v3 — Transpiler Optimization
+================================================================
+Date: 2026-07-07
+Search space: 16 rows (4 qubits)
+Marked: row 14 (C(14,6)=3003) and row 15 (C(15,5)=3003)
+Backend: ibm_marrakesh (156-qubit heavy-hex)
+Job ID: d960k04qp3as739q1jkg
+Shots: 4096
+
+Optimizations applied (16,271 → 103 gates, 99.4% reduction):
+  1. generate_preset_pass_manager opt=2 seed=42: 16,271 → 438 gates
+  2. Oracle simplification: rows 14+15 share q1=q2=q3=1 → one CCZ replaces two MCX calls
+  3. Ancilla-based diffusion: RCCX(0,1,anc) + CCX(anc,2,3) + RCCX(0,1,anc) = 12 CX
+  4. Removed oracle/diffusion barrier: compiler cancels boundary H·H and X·X gates
+  Runtime: DD enabled, Pauli twirling enabled
+
+Top 8 measured states:
+  |1110⟩ (row 14): 1081 shots ( 26.4%) ← 3003!
+  |1111⟩ (row 15): 1051 shots ( 25.7%) ← 3003!
+  |1101⟩ (row 13):  186 shots (  4.5%)
+  |1100⟩ (row 12):  183 shots (  4.5%)
+  |1010⟩ (row 10):  176 shots (  4.3%)
+  |0110⟩ (row  6):  173 shots (  4.2%)
+  |0111⟩ (row  7):  171 shots (  4.2%)
+  |1011⟩ (row 11):  152 shots (  3.7%)
+
+Marked rows combined: 2132/4096 shots = 52.1%
+Uniform random would give: 12.5%
+Amplification: 4.17×
+✅ SUCCESS — Grover's found 3003 at rows [14, 15]
+
+================================================================
+FULL EXPERIMENT TIMELINE — 3003 in Pascal's Triangle
+================================================================
+Phase 1  (  772 gates, opt=1, ibm_kingston):   3.0×  ✅
+Phase 2  (16,271 gates, opt=1, ibm_marrakesh): 1.04× ❌  noise floor
+Phase 3v3 (  103 gates, opt=2, ibm_marrakesh): 4.17× ✅
+
+99.4% gate reduction. Signal recovered and exceeded Phase 1.
 
 ================================================================
 OBSERVATIONS
 ================================================================
-1. Amplification degrades with depth: 4.11x (depth 611) → 3.0x (depth 772)
-2. Both experiments succeeded on real hardware despite significant noise
-3. The approach scales — same oracle/diffusion pattern works for any value
-4. Next: IonQ comparison (trapped ions, lower gate error) once credits approved
+1. Transpilation overhead (161×) is the dominant challenge on heavy-hex topology
+2. Pass manager optimization (opt level + seed sweep) is the highest-ROI fix
+3. Oracle simplification via shared Boolean conditions cuts gates significantly
+4. RCCX safe for ancilla compute/uncompute but NOT for phase kickback oracle
+5. Removing barriers between circuit sections enables compiler boundary cancellation
+6. Hardware amplification (4.17×) close to simulator prediction (6.2×) at 103 gates
+7. Next: 5-qubit search (32 rows) to find more appearances of 3003 in Pascal's Triangle
