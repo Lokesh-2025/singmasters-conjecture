@@ -130,7 +130,16 @@ Simulator prediction (1 iteration, noiseless):
   Row 14: ~6%  |  Row 15: ~6.5%  |  Row 78: ~7.1%
   Total: ~19.6% on marked states (8.5× amplification)
 
-Hardware result: PENDING — job d970aut2su3c739hfth0
+Hardware result:
+  Row  78 (1001110):  28 shots (2.7%) ← 3003! FIRST TIME ON HARDWARE
+  Row  14 (0001110):  24 shots (2.3%) ← 3003!
+  Row  15 (0001111):  20 shots (2.0%) ← 3003!
+  (random baseline: 0.78% per row = ~8 shots)
+
+  Marked rows combined: 72/1024 shots = 7.0%
+  Random baseline: 2.3% (3 rows × 0.78%)
+  Amplification: 3.04×
+  ✅ SUCCESS — Row 78 found on real quantum hardware for the first time!
 
 Oracle design (all Phase 1-4 techniques):
   - Shared Boolean factoring: q3=q2=q1=1 AND q4=0 AND q5=0 (all 3 rows share this)
@@ -145,7 +154,7 @@ FULL EXPERIMENT TIMELINE — 3003 in Pascal's Triangle
 Phase 1   (  772 gates, opt=1, ibm_kingston,   4 qubits):  3.0×  ✅
 Phase 2   (16,271 gates, opt=1, ibm_marrakesh, 4 qubits):  1.04× ❌  noise floor
 Phase 3v3 (  103 gates, opt=2, ibm_marrakesh,  4 qubits):  4.17× ✅
-Phase 4   (  624 gates, opt=3, ibm_marrakesh,  7 qubits):  PENDING ⏳
+Phase 4   (  624 gates, opt=3, ibm_marrakesh,  7 qubits):  3.04× ✅  (row 78 found!)
 
 99.4% gate reduction Phase 2→3. First 7-qubit run targeting row 78.
 
