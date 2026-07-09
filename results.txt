@@ -364,6 +364,23 @@ Random baseline per rail: 0.39% (1/256)
    simultaneously, with 179× amplification over random noise.
 
 ================================================================
+SIEVE RUN 3 — max_n=50,000 (deep classical search)
+================================================================
+Date: 2026-07-08
+Tool: sieve_singmaster_space (classical, zero QPU)
+Search space: n=2..50,000 × k=2..200 (~5 million C(n,k) values)
+
+9+ appearances: 0
+8  appearances: 1  →  VALUE 3003 (same 8 positions as always)
+
+3003 is completely alone at the top across 50,000 rows.
+Everything else peaks at ≤6 appearances.
+
+If a 9+ value exists it requires n > 50,000 and would itself be
+larger than C(50000,100) — an astronomically large number.
+Result is consistent with Singmaster's Conjecture holding true.
+
+================================================================
 FULL EXPERIMENT TIMELINE
 ================================================================
 Phase 1    (  772 gates, opt=1, ibm_kingston,   4 qubits):   3.0×  ✅
