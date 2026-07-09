@@ -134,10 +134,12 @@ C(14,6) = C(14,8) = C(15,5) = C(15,10) = C(78,2) = C(78,76) = C(3003,1) = C(3003
 | `phase5_lnaa.py` | Phase 5 — LNAA, 27.78× (record at time) |
 
 New tools (Phases 6+) live in [quantum-hardware-mcp/server.py](https://github.com/Lokesh-2025/quantum-hardware-mcp/blob/master/server.py):
-- `encode_collision_problem`
-- `run_parallel_collision_search`
-- `sieve_singmaster_space`
-- `encode_4way_collision`
+- `encode_collision_problem` — auto-finds C(n1,k1)=C(n2,k2) pairs, encodes as Ising Hamiltonian (122.92× in simulation)
+- `run_parallel_collision_search` — tiles N independent LNAA rails across IBM's 156-qubit chip in one job (~300× on ibm_kingston)
+- `sieve_singmaster_space` — Lucas theorem classical sieve, validated all 8 positions of 3003, searched n=2..50,000
+- `encode_4way_collision` — multi-column parallel LNAA, **178.8× on ibm_fez** — hardware record
+- `find_collision_candidates` — curve intersection search, integer root-finding across column pairs
+- `equality_oracle_search` — **discovery-mode oracle**: two registers in superposition, cross-register RZZ encodes Lucas equality, finds C(n1,k1)=C(n2,k2) without being told the answer. Found C(16,2)=C(10,3)=120 blind on first run.
 
 ---
 
@@ -151,3 +153,5 @@ New tools (Phases 6+) live in [quantum-hardware-mcp/server.py](https://github.co
 6. **94% hardware/simulation retention** — LNAA results are highly predictable from simulation
 7. **No 9+ value found** up to n=50,000 — consistent with Singmaster's Conjecture
 8. If a 9+ value exists, it requires n > 50,000 and would itself be astronomically large
+9. **Discovery-mode oracle works**: equality_oracle_search found known collisions without being given answers — validates the two-register LNAA approach
+10. **Lucas predicate is classically cheap** — the quantum oracle's advantage is demonstrating the circuit construction on real hardware, not raw search speed over classical methods
