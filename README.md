@@ -139,7 +139,7 @@ New tools (Phases 6+) live in [quantum-hardware-mcp/server.py](https://github.co
 - `sieve_singmaster_space` — Lucas theorem classical sieve, validated all 8 positions of 3003, searched n=2..50,000
 - `encode_4way_collision` — multi-column parallel LNAA, **178.8× on ibm_fez** — hardware record
 - `find_collision_candidates` — curve intersection search, integer root-finding across column pairs
-- `equality_oracle_search` — **discovery-mode oracle**: two registers in superposition, cross-register RZZ encodes Lucas equality, finds C(n1,k1)=C(n2,k2) without being told the answer. Found C(16,2)=C(10,3)=120 blind on first run.
+- `equality_oracle_search` — two registers in superposition, cross-register RZZ amplifies pairs matching a Lucas mod-2 parity oracle, without being told which rows to look for. Parity match is a weak, ~50%-hit-rate filter, not proof of equality — classical post-processing (`comb()`) checks every measured pair for true equality. Confirmed C(16,2)=C(10,3)=120 this way.
 
 ---
 
@@ -153,5 +153,5 @@ New tools (Phases 6+) live in [quantum-hardware-mcp/server.py](https://github.co
 6. **94% hardware/simulation retention** — LNAA results are highly predictable from simulation
 7. **No 9+ value found** up to n=50,000 — consistent with Singmaster's Conjecture
 8. If a 9+ value exists, it requires n > 50,000 and would itself be astronomically large
-9. **Discovery-mode oracle works**: equality_oracle_search found known collisions without being given answers — validates the two-register LNAA approach
+9. **Two-register LNAA works**: equality_oracle_search amplifies toward parity-matched pairs without being told which rows to check; classical post-processing confirms true equality — validates the two-register approach as a filter, not a standalone oracle
 10. **Lucas predicate is classically cheap** — the quantum oracle's advantage is demonstrating the circuit construction on real hardware, not raw search speed over classical methods
