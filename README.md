@@ -86,6 +86,21 @@ Built `encode_4way_collision` — takes a value and its known positions from the
 
 ---
 
+## Cross-hardware result: IBM vs IonQ, real hardware, same circuits (2026-08-19)
+
+A separate, later experiment — not the collision search above, but the actual cross-vendor question the IonQ Research Credits grant was originally titled for ("Cross-Hardware Quantum Noise Benchmarking: IBM vs IonQ"). A graded-connectivity entangling circuit family (`single`, `ring`) was run for real on IonQ's Forte-Enterprise-1 first, then the identical circuits were run for real on `ibm_fez`:
+
+| Circuit | IonQ (Forte-Enterprise-1) | IBM (`ibm_fez`) |
+|---|---|---|
+| **single** | 56.8x | 55.27x |
+| **ring** | 15.7x | 20.38x |
+
+`single` agrees almost exactly across two completely different qubit technologies (trapped ion vs. superconducting). `ring` doesn't — connectivity hurts more on IonQ than on IBM, a real, hardware-confirmed difference, not assumed from either vendor's noise model. A third circuit (`degree3`) was deliberately excluded from the IBM side: its required connectivity needs two triangles, and `ibm_fez`'s heavy-hex topology is provably triangle-free (checked directly against the real coupling map), so it can't map onto IBM without SWAP injection regardless of qubit choice.
+
+Full narrative — real qubit selection, zero-SWAP verification, endianness cross-checks, and the two real tool bugs this work caught and fixed along the way — lives in the private [`ionq-singmasters`](https://github.com/Lokesh-2025/ionq-singmasters) repo, since it's built on top of the same real IonQ-side research documented there.
+
+---
+
 ## The Pipeline
 
 ```
