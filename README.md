@@ -86,18 +86,20 @@ Built `encode_4way_collision` — takes a value and its known positions from the
 
 ---
 
-## Cross-hardware result: IBM vs IonQ, real hardware, same circuits (2026-08-19)
+## Cross-hardware result: IBM vs IonQ, real hardware, repeated to check it was real (2026-08-19)
 
-A separate, later experiment — not the collision search above, but the actual cross-vendor question the IonQ Research Credits grant was originally titled for ("Cross-Hardware Quantum Noise Benchmarking: IBM vs IonQ"). A graded-connectivity entangling circuit family (`single`, `ring`) was run for real on IonQ's Forte-Enterprise-1 first, then the identical circuits were run for real on `ibm_fez`:
+A separate, later experiment — not the collision search above, but the actual cross-vendor question the IonQ Research Credits grant was originally titled for ("Cross-Hardware Quantum Noise Benchmarking: IBM vs IonQ"). A graded-connectivity entangling circuit family (`single`, `ring`) was run for real on IonQ's Forte-Enterprise-1 first, then the identical circuits were run for real on `ibm_fez` — then **both were repeated on both platforms**, because a single run can't tell a real hardware difference apart from a lucky/unlucky one.
 
-| Circuit | IonQ (Forte-Enterprise-1) | IBM (`ibm_fez`) |
-|---|---|---|
-| **single** | 56.8x | 55.27x |
-| **ring** | 15.7x | 20.38x |
+| Circuit | IonQ run 1 | IonQ run 2 | IBM run 1 | IBM run 2 |
+|---|---|---|---|---|
+| **single** | 56.8x | 56.14x | 55.27x | 55.06x |
+| **ring** | 15.7x | 23.70x | 20.38x | 20.30x |
 
-`single` agrees almost exactly across two completely different qubit technologies (trapped ion vs. superconducting). `ring` doesn't — connectivity hurts more on IonQ than on IBM, a real, hardware-confirmed difference, not assumed from either vendor's noise model. A third circuit (`degree3`) was deliberately excluded from the IBM side: its required connectivity needs two triangles, and `ibm_fez`'s heavy-hex topology is provably triangle-free (checked directly against the real coupling map), so it can't map onto IBM without SWAP injection regardless of qubit choice.
+**`single` is genuinely stable — both platforms, both runs, all within ~1-2% of each other.** `ring` on IonQ is not: a 51% swing between two runs of the identical circuit. IBM's `ring`, run the exact same way, stayed within 0.4% both times.
 
-Full narrative — real qubit selection, zero-SWAP verification, endianness cross-checks, and the two real tool bugs this work caught and fixed along the way — lives in the private [`ionq-singmasters`](https://github.com/Lokesh-2025/ionq-singmasters) repo, since it's built on top of the same real IonQ-side research documented there.
+The first run alone suggested "IBM handles connectivity better than IonQ" — that reading didn't survive the repeat, and doesn't reflect what's actually true. The real, repeat-confirmed finding is narrower: **IonQ's real-hardware result for this circuit is highly variable run-to-run; IBM's is highly reproducible.** A claim about noise stability, not about which vendor "wins." A third circuit (`degree3`) was deliberately excluded from the IBM side entirely: its required connectivity needs two triangles, and `ibm_fez`'s heavy-hex topology is provably triangle-free (checked directly against the real coupling map), so it can't map onto IBM without SWAP injection regardless of qubit choice.
+
+Full narrative — real qubit selection, zero-SWAP verification, endianness cross-checks, the real tool bugs this work caught and fixed along the way, and the repeat that overturned the first-glance reading — lives in the private [`ionq-singmasters`](https://github.com/Lokesh-2025/ionq-singmasters) repo, since it's built on top of the same real IonQ-side research documented there.
 
 ---
 
