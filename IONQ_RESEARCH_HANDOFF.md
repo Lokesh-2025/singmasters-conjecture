@@ -1,5 +1,16 @@
 # IonQ Research Handoff: Singmaster's Conjecture
 
+**Status as of 2026-09-27: written 2026-08-10, never executed.** This plan
+predates and is separate from the E1 single/ring/degree3 series that
+actually ran for real on 2026-08-13 (`ionq-singmasters/circuits/E1_LOG.md`)
+and became the paper — the research direction shifted to that graded-
+entanglement series instead of this triple-rail collision search. Real,
+still-valid, still-unrun candidate for "port the parallel-rail search to
+IonQ" if that direction gets picked up again (`quantum-hardware-mcp`'s
+`run_parallel_collision_search`/Step 3 already proved the 3-rail idea for
+real on IBM; this document is the IonQ-side version of that same idea,
+never executed). Left below exactly as originally written.
+
 ## Progress Summary
 We have completed the **Pre-Flight Scouting and Simulation** phase. We established a strategy to maximize the $3,000 IonQ credit budget by batching three independent searches into a single $168 hardware job.
 

@@ -101,6 +101,8 @@ The first run alone suggested "IBM handles connectivity better than IonQ" — th
 
 Full narrative — real qubit selection, zero-SWAP verification, endianness cross-checks, the real tool bugs this work caught and fixed along the way, and the repeat that overturned the first-glance reading — lives in the private [`ionq-singmasters`](https://github.com/Lokesh-2025/ionq-singmasters) repo, since it's built on top of the same real IonQ-side research documented there.
 
+**This whole comparison is now written up as a paper** — "Verify Before You Trust It, Even Yourself" (Lokesh Pullakandam, Jack Woehr), finished 2026-09-22 and externally verification-checked 2026-09-27 against the real repos and job data. Draft, data, and PDF live in `ionq-singmasters` (`PAPER_DRAFT.md` / `PAPER_DATA.md` / `Verify_Before_You_Trust_It_Even_Yourself.pdf`) — not yet posted publicly, pending the dedicated data release referenced in its Data Availability section.
+
 ---
 
 ## The Pipeline
